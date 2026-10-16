@@ -1,0 +1,19 @@
+# REDkit build output (recreated by Publish)
+cooked/
+cookeddlc/
+packed/
+publish/
+logs/
+thumbnails/
+
+# Backups and exports
+*.bak
+*.old
+LocalEditorStringDataBaseW3_UTF8_mod_export.csv
+
+# Stray copy outside the REDkit workspace (the real one is under workspace/)
+/mods/
+
+# Python
+__pycache__/
+*.pyc

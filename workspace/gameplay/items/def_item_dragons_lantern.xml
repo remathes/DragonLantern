@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Dragon's Lantern items. Pack into the mod bundle as
+  gameplay\items\def_item_dragons_lantern.xml and gameplay\items_plus\def_item_dragons_lantern.xml.
+
+  The lantern follows the game's own "Oil Lamp" usable (gameplay\items\def_item_misc.xml):
+  same category, templates, quick-slot tag and holster action, so it can sit in a Pockets
+  slot. The script toggles it on the belt instead of letting Geralt hold it.
+  The oil follows the game's stackable "misc" items.
+-->
+<redxml>
+	<definitions>
+		<items>
+			<item name="DDL Belt Lantern"
+				category="usable"
+				price="60"
+				weight="0.8"
+				equip_slot=""
+				hold_slot="l_weapon"
+				equip_template="oillamp"
+				hold_template="oillamp"
+				icon_path="icons\inventory\ddl\belt_lantern_64x64.png"
+				localisation_key_name="item_name_ddl_lantern"
+				localisation_key_description="item_desc_ddl_lantern">
+				<tags>QuickSlot, UI_OilLamp</tags>
+				<anim_actions>
+					<action name="holster" event="ItemUse" act="hide_item_act" deact="hide_item_deact" />
+				</anim_actions>
+			</item>
+
+			<item name="DDL Lantern Oil"
+				category="misc"
+				price="8"
+				weight="0.2"
+				stackable="100"
+				hold_slot=""
+				icon_path="icons\inventory\ddl\lantern_oil_64x64.png"
+				localisation_key_name="item_name_ddl_oil"
+				localisation_key_description="item_desc_ddl_oil">
+			</item>
+		</items>
+		<usable_item_types>
+			<usable_item name="DDL Belt Lantern" type="oil_lamp" />
+		</usable_item_types>
+	</definitions>
+</redxml>

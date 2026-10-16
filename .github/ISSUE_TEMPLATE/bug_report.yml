@@ -1,0 +1,78 @@
+name: Bug report
+description: Something in Dragon's Lantern doesn't work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! A few details make bugs much quicker to fix.
+        Tip: open the debug console and run `ddlstatus` — it shows what the lantern thinks is happening.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Equip the Belt Lantern in a Pockets slot
+        2. ...
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Where did you get the mod?
+      options:
+        - Steam Workshop
+        - Nexus Mods
+        - Mod.io
+        - Built from this repository
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: store
+    attributes:
+      label: Game platform
+      options:
+        - PC - Steam
+        - PC - GOG
+        - PC - Epic
+        - PlayStation 5
+        - Xbox Series X|S
+        - Nintendo Switch 2
+    validations:
+      required: true
+  - type: input
+    id: game_version
+    attributes:
+      label: Game version
+      description: Shown in the main menu, bottom corner.
+      placeholder: "5.01"
+    validations:
+      required: true
+  - type: input
+    id: mod_version
+    attributes:
+      label: Mod version
+      placeholder: "1.0"
+    validations:
+      required: true
+  - type: input
+    id: language
+    attributes:
+      label: Game text language
+      placeholder: English
+  - type: textarea
+    id: other_mods
+    attributes:
+      label: Other mods installed
+      description: Especially any that change scripts, the inventory or shops.
+  - type: textarea
+    id: status
+    attributes:
+      label: ddlstatus output and screenshots
+      description: Optional, but very helpful. Paste the `ddlstatus` text and drag screenshots in here.

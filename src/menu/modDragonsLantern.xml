@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Options > Mods > Dragon's Lantern. Var ids must match DDL_Bool/DDL_Num/DDL_Option calls in dragonsLantern.ws. -->
+<UserConfig>
+    <Group id="DDLantern" displayName="Mods.ddl_title">
+        <PresetsArray>
+            <Preset id="0" displayName="ddl_preset_default">
+                <Entry varId="enabled" value="true" overrideGroup="DDLantern" />
+                <Entry varId="position" value="0" overrideGroup="DDLantern" />
+                <Entry varId="showUnequipped" value="false" overrideGroup="DDLantern" />
+                <Entry varId="autoLight" value="1" overrideGroup="DDLantern" />
+                <Entry varId="requireOil" value="true" overrideGroup="DDLantern" />
+                <Entry varId="autoRefill" value="true" overrideGroup="DDLantern" />
+                <Entry varId="burnHours" value="8" overrideGroup="DDLantern" />
+                <Entry varId="douseInWater" value="true" overrideGroup="DDLantern" />
+                <Entry varId="hideInScenes" value="true" overrideGroup="DDLantern" />
+                <Entry varId="merchants" value="true" overrideGroup="DDLantern" />
+                <Entry varId="brightness" value="80" overrideGroup="DDLantern" />
+                <Entry varId="radius" value="12" overrideGroup="DDLantern" />
+                <Entry varId="castShadows" value="false" overrideGroup="DDLantern" />
+                <Entry varId="swing" value="true" overrideGroup="DDLantern" />
+                <Entry varId="swingStrength" value="100" overrideGroup="DDLantern" />
+                <Entry varId="modelUp" value="0" overrideGroup="DDLantern" />
+                <Entry varId="offsetForward" value="0" overrideGroup="DDLantern" />
+                <Entry varId="offsetUp" value="0" overrideGroup="DDLantern" />
+                <Entry varId="offsetOut" value="0" overrideGroup="DDLantern" />
+            </Preset>
+        </PresetsArray>
+        <VisibleVars>
+            <Var id="enabled" displayName="ddl_enabled" displayType="TOGGLE" value="true" overrideGroup="DDLantern" />
+            <Var id="showUnequipped" displayName="ddl_show_unequipped" displayType="TOGGLE" value="false" overrideGroup="DDLantern" />
+            <Var id="position" displayName="ddl_position" displayType="OPTIONS" value="0" overrideGroup="DDLantern">
+                <OptionsArray>
+                    <Option id="0" displayName="ddl_pos_left">
+                        <Entry varId="position" value="0" overrideGroup="DDLantern" />
+                    </Option>
+                    <Option id="1" displayName="ddl_pos_right">
+                        <Entry varId="position" value="1" overrideGroup="DDLantern" />
+                    </Option>
+                    <Option id="2" displayName="ddl_pos_back">
+                        <Entry varId="position" value="2" overrideGroup="DDLantern" />
+                    </Option>
+                    <Option id="3" displayName="ddl_pos_front">
+                        <Entry varId="position" value="3" overrideGroup="DDLantern" />
+                    </Option>
+                </OptionsArray>
+            </Var>
+            <Var id="autoLight" displayName="ddl_auto_light" displayType="OPTIONS" value="1" overrideGroup="DDLantern">
+                <OptionsArray>
+                    <Option id="0" displayName="ddl_auto_off">
+                        <Entry varId="autoLight" value="0" overrideGroup="DDLantern" />
+                    </Option>
+                    <Option id="1" displayName="ddl_auto_equipped">
+                        <Entry varId="autoLight" value="1" overrideGroup="DDLantern" />
+                    </Option>
+                    <Option id="2" displayName="ddl_auto_night">
+                        <Entry varId="autoLight" value="2" overrideGroup="DDLantern" />
+                    </Option>
+                </OptionsArray>
+            </Var>
+            <Var id="requireOil" displayName="ddl_require_oil" displayType="TOGGLE" value="true" overrideGroup="DDLantern" />
+            <Var id="autoRefill" displayName="ddl_auto_refill" displayType="TOGGLE" value="true" overrideGroup="DDLantern" />
+            <Var id="burnHours" displayName="ddl_burn_hours" displayType="SLIDER;1;48;47" value="8" overrideGroup="DDLantern" />
+            <Var id="douseInWater" displayName="ddl_douse" displayType="TOGGLE" value="true" overrideGroup="DDLantern" />
+            <Var id="hideInScenes" displayName="ddl_hide_scenes" displayType="TOGGLE" value="true" overrideGroup="DDLantern" />
+            <Var id="merchants" displayName="ddl_merchants" displayType="TOGGLE" value="true" overrideGroup="DDLantern" />
+            <Var id="brightness" displayName="ddl_brightness" displayType="SLIDER;1;200;199" value="80" overrideGroup="DDLantern" />
+            <Var id="radius" displayName="ddl_radius" displayType="SLIDER;2;30;28" value="12" overrideGroup="DDLantern" />
+            <Var id="castShadows" displayName="ddl_shadows" displayType="TOGGLE" value="false" overrideGroup="DDLantern" />
+            <Var id="swing" displayName="ddl_swing" displayType="TOGGLE" value="true" overrideGroup="DDLantern" />
+            <Var id="swingStrength" displayName="ddl_swing_strength" displayType="SLIDER;0;200;40" value="100" overrideGroup="DDLantern" />
+            <Var id="modelUp" displayName="ddl_model_up" displayType="OPTIONS" value="0" overrideGroup="DDLantern">
+                <OptionsArray>
+                    <Option id="0" displayName="ddl_up_pitch90">
+                        <Entry varId="modelUp" value="0" overrideGroup="DDLantern" />
+                    </Option>
+                    <Option id="1" displayName="ddl_up_none">
+                        <Entry varId="modelUp" value="1" overrideGroup="DDLantern" />
+                    </Option>
+                    <Option id="2" displayName="ddl_up_pitchneg90">
+                        <Entry varId="modelUp" value="2" overrideGroup="DDLantern" />
+                    </Option>
+                    <Option id="3" displayName="ddl_up_roll180">
+                        <Entry varId="modelUp" value="3" overrideGroup="DDLantern" />
+                    </Option>
+                </OptionsArray>
+            </Var>
+            <Var id="offsetForward" displayName="ddl_offset_forward" displayType="SLIDER;-20;20;40" value="0" overrideGroup="DDLantern" />
+            <Var id="offsetUp" displayName="ddl_offset_up" displayType="SLIDER;-20;20;40" value="0" overrideGroup="DDLantern" />
+            <Var id="offsetOut" displayName="ddl_offset_out" displayType="SLIDER;-20;20;40" value="0" overrideGroup="DDLantern" />
+        </VisibleVars>
+    </Group>
+</UserConfig>
