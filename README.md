@@ -17,7 +17,7 @@ A Dragon's Dogma style belt lantern for **The Witcher 3: Wild Hunt — Remastere
 ## Get the mod
 
 - **Steam Workshop:** coming soon
-- **Nexus Mods:** coming soon
+- **Nexus Mods:** https://www.nexusmods.com/witcher3/mods/14479
 - **Mod.io:** coming soon
 
 Requires The Witcher 3 Remastered (game version 5.0 or later). Then buy the
