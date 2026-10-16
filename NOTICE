@@ -1,0 +1,14 @@
+Dragon's Lantern - game content notice
+
+The MIT license in LICENSE covers only the original work in this repository: the
+scripts, item and menu definitions, translations, tools and documentation.
+
+The Witcher 3: Wild Hunt and its content belong to CD PROJEKT RED. That includes
+the lantern model the entity in workspace/mods/ is based on, the game icons the
+mod's icons are derived from, and the game's scripts and data referred to here.
+They are used under CD PROJEKT RED's REDkit End User License Agreement and Fan
+Content Guidelines, and are not covered by the MIT license. This mod is a free,
+non-commercial fan project and is not affiliated with or endorsed by
+CD PROJEKT RED.
+
+The Witcher(R) is a trademark of CD PROJEKT S.A.

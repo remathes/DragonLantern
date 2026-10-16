@@ -103,5 +103,5 @@ entirely on scripts, so it targets PC.
 
 Original work in this repository is MIT licensed. The Witcher 3 game content it
 builds on belongs to CD PROJEKT RED and is used under the REDkit EULA and Fan
-Content Guidelines. See [LICENSE](LICENSE). This is a free fan project, not
+Content Guidelines. See [LICENSE](LICENSE) and [NOTICE](NOTICE). This is a free fan project, not
 affiliated with CD PROJEKT RED.
