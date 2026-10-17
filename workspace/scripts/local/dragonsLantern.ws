@@ -737,43 +737,59 @@ function OnUseSelectedItem(optional force : bool)
 
 // Shops. The game's inventory menu treats an NPC tagged 'Merchant' as a shop
 // (CR4InventoryMenu.OnConfigUI), refreshes its loot and then builds the shop
-// grid. We top up innkeepers' and shopkeepers' stock just before that.
+// grid. A restock during that refresh can clear items outside the merchant's
+// loot table, so we stock before and check again after, redrawing the shop
+// grid with the game's own UpdateShop() if anything had to be re-added.
 @wrapMethod(CR4InventoryMenu)
 function OnConfigUI()
 {
-    DDL_StockShop(GetMenuInitData());
+    var data : IScriptable;
+    data = GetMenuInitData();
+    DDL_StockShop(data);
     wrappedMethod();
+    if (DDL_StockShop(data))
+        UpdateShop();
 }
 
-function DDL_StockShop(data : IScriptable)
+// Adds the lantern and oil to an innkeeper's or shopkeeper's stock when
+// missing. Returns true if anything was added.
+function DDL_StockShop(data : IScriptable) : bool
 {
     var npc : CNewNPC;
     var initData : W3InventoryInitData;
     var merchant : W3MerchantComponent;
     var inv : CInventoryComponent;
     var pin : name;
+    var added : bool;
 
     if (!DDL_Bool('merchants', true))
-        return;
+        return false;
     npc = (CNewNPC)data;
     initData = (W3InventoryInitData)data;
     if (initData)
         npc = (CNewNPC)initData.containerNPC;
     if (!npc || !npc.HasTag('Merchant'))
-        return;
+        return false;
     merchant = (W3MerchantComponent)npc.GetComponentByClassName('W3MerchantComponent');
     if (!merchant)
-        return;
+        return false;
     pin = merchant.GetMapPinType();
     if (pin != 'Innkeeper' && pin != 'Shopkeeper')
-        return;
+        return false;
     inv = npc.GetInventory();
     if (!inv)
-        return;
+        return false;
     if (!inv.HasItem(DDL_LanternItem()))
+    {
         inv.AddAnItem(DDL_LanternItem(), 1);
+        added = true;
+    }
     if (inv.GetItemQuantityByName(DDL_OilItem()) < 3)
+    {
         inv.AddAnItem(DDL_OilItem(), 5);
+        added = true;
+    }
+    return added;
 }
 
 // ---------------------------------------------------------------------------
