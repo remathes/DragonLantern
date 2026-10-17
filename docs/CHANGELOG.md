@@ -1,3 +1,9 @@
+Version 1.1
+
+- New: riding position. While Geralt is on horseback the lantern moves to the back of his belt, clear of the saddle and his leg, and returns to his hip when he dismounts.
+- New: light or douse the lantern while riding with the use-item button (middle mouse / R1 / RB). The game normally blocks usable items in the saddle.
+- Fixed: shops sometimes didn't stock the Belt Lantern and Lantern Oil after restocking.
+
 Version 1.0 - First release
 
 - Belt Lantern: equip it in a Pockets slot and it hangs from Geralt's left hip with both hands free, like the Arisen's lantern in Dragon's Dogma. Also offers right hip, front-left and small of the back, and an option to keep it on the belt even when not equipped.

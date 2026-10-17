@@ -94,6 +94,8 @@ Commands that take values need parentheses and commas, e.g. `ddlpos(0, 2, 0)`.
 | `ddlbody(pitch, yaw, roll)` | Rotates the lantern body about its own axes |
 | `ddltune` / `ddlreset` | Show / clear the nudges |
 
+While Geralt is riding, `ddlpos`, `ddlrot`, `ddlbody`, `ddltune` and `ddlreset` adjust a separate riding position (his hips turn in the saddle). The standing position is untouched.
+
 ## Consoles
 
 It's unknown whether Mod.io mods on PS5/Xbox may ship scripts. This mod relies

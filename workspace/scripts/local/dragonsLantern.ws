@@ -34,6 +34,11 @@ function DDL_FlameName() : string { return "ddl_flame"; }
 
 // Pelvis bone axes on Geralt's rig: -X forward, -Y up, -Z his left.
 function DDL_AttachBone() : name { return 'pelvis'; }
+// Extra offset while mounted, tuned in game: the lantern moves to the back of
+// the belt, clear of the saddle and thigh (cm forward / up / out, degrees).
+function DDL_RideOffset() : Vector { return Vector(-16.0, -1.0, 9.0); }
+function DDL_RideRotation() : EulerAngles { return EulerAngles(11.0, 9.0, -12.0); }
+function DDL_RideTwist() : EulerAngles { return EulerAngles(0.0, 90.0, 6.0); }
 
 // ---------------------------------------------------------------------------
 // State
@@ -72,6 +77,21 @@ function DDL_AttachBone() : name { return 'pelvis'; }
 @addField(W3PlayerWitcher) saved var ddlTwistPitch : float;
 @addField(W3PlayerWitcher) saved var ddlTwistYaw : float;
 @addField(W3PlayerWitcher) saved var ddlTwistRoll : float;
+
+// While Geralt sits on a horse his hips rotate, so the lantern gets extra
+// offsets on top of the belt position. Tuned with the same commands while riding.
+@addField(W3PlayerWitcher) saved var ddlRideForward : float;
+@addField(W3PlayerWitcher) saved var ddlRideUp : float;
+@addField(W3PlayerWitcher) saved var ddlRideOut : float;
+@addField(W3PlayerWitcher) saved var ddlRidePitch : float;
+@addField(W3PlayerWitcher) saved var ddlRideYaw : float;
+@addField(W3PlayerWitcher) saved var ddlRideRoll : float;
+@addField(W3PlayerWitcher) saved var ddlRideTwistPitch : float;
+@addField(W3PlayerWitcher) saved var ddlRideTwistYaw : float;
+@addField(W3PlayerWitcher) saved var ddlRideTwistRoll : float;
+@addField(W3PlayerWitcher) var ddlRiding : bool;
+@addField(W3PlayerWitcher) var ddlRideButtonDown : bool;
+@addField(W3PlayerWitcher) var ddlRideWatch : bool;
 
 // Pendulum: two angles (degrees) and their rates, driven by pelvis acceleration.
 @addField(W3PlayerWitcher) var ddlSwingFwd : float;
@@ -330,6 +350,10 @@ function DDL_Despawn()
     ddlShown = false;
     ddlFlameOn = false;
     ddlSettingsSeen = "";
+    ddlRiding = false;
+    if (ddlRideWatch)
+        RemoveTimer('DDL_RideButtonTick');
+    ddlRideWatch = false;
 }
 
 // Places the carrier relative to the pelvis from the position option plus
@@ -337,7 +361,8 @@ function DDL_Despawn()
 @addMethod(W3PlayerWitcher)
 function DDL_ApplyPlacement()
 {
-    var offset : Vector;
+    var offset, rideOffset : Vector;
+    var rideRotation, rideTwist : EulerAngles;
     var yaw, lean, twist : float;
 
     if (!ddlCarrier)
@@ -357,6 +382,13 @@ function DDL_ApplyPlacement()
     offset.X += ddlTuneForward * -0.01;
     offset.Y += ddlTuneUp * -0.01;
     offset.Z += ddlTuneOut * -0.01 * DDL_SideSign();
+    if (ddlRiding)
+    {
+        rideOffset = DDL_RideOffset();
+        offset.X += (rideOffset.X + ddlRideForward) * -0.01;
+        offset.Y += (rideOffset.Y + ddlRideUp) * -0.01;
+        offset.Z += (rideOffset.Z + ddlRideOut) * -0.01 * DDL_SideSign();
+    }
 
     ddlBasePosition = offset;
     // The model's up axis vs. the pelvis' (-Y) is unverified, so it's a menu
@@ -372,12 +404,29 @@ function DDL_ApplyPlacement()
     ddlBaseRotation.Pitch += lean + ddlTunePitch;
     ddlBaseRotation.Yaw += ddlTuneYaw;
     ddlBaseRotation.Roll += ddlTuneRoll;
+    if (ddlRiding)
+    {
+        rideRotation = DDL_RideRotation();
+        ddlBaseRotation.Pitch += rideRotation.Pitch + ddlRidePitch;
+        ddlBaseRotation.Yaw += rideRotation.Yaw + ddlRideYaw;
+        ddlBaseRotation.Roll += rideRotation.Roll + ddlRideRoll;
+    }
     ddlCarrier.SetPosition(ddlBasePosition);
     ddlCarrier.SetRotation(ddlBaseRotation);
     // Twist the body about its own axis, relative to the carrier, so the door
     // and candle face forward. Done on the child to avoid the carrier's gimbal lock.
     if (ddlBody)
-        ddlBody.SetRotation(EulerAngles(ddlTwistPitch, twist + ddlTwistYaw, ddlTwistRoll));
+    {
+        if (ddlRiding)
+        {
+            rideTwist = DDL_RideTwist();
+            ddlBody.SetRotation(EulerAngles(ddlTwistPitch + rideTwist.Pitch + ddlRideTwistPitch,
+                twist + ddlTwistYaw + rideTwist.Yaw + ddlRideTwistYaw,
+                ddlTwistRoll + rideTwist.Roll + ddlRideTwistRoll));
+        }
+        else
+            ddlBody.SetRotation(EulerAngles(ddlTwistPitch, twist + ddlTwistYaw, ddlTwistRoll));
+    }
 }
 
 // +1 when the lantern hangs on Geralt's left (-Z), -1 on his right.
@@ -523,6 +572,12 @@ function DDL_Sync()
     }
     if (!DDL_Spawn())
         return;
+    if (IsUsingHorse(true) != ddlRiding)
+    {
+        ddlRiding = IsUsingHorse(true);
+        DDL_ApplyPlacement();
+    }
+    DDL_UpdateRideWatch();
 
     inWater = DDL_InWater();
     if (inWater && !ddlWasInWater && ddlLit && DDL_Bool('douseInWater', true))
@@ -569,6 +624,37 @@ function DDL_Toggle()
     }
     ddlLit = !ddlLit;
     DDL_Sync();
+}
+
+// On horseback the use-item button is bound to 'VehicleItemAction' and handled
+// by the game's horse combat states, which don't allow usable items. Rather
+// than take that action over (the crossbow needs it), watch the button while
+// riding with the lantern selected, the same way the game itself polls it.
+@addMethod(W3PlayerWitcher)
+function DDL_UpdateRideWatch()
+{
+    var want : bool;
+    want = ddlRiding && DDL_IsLanternSelected();
+    if (want == ddlRideWatch)
+        return;
+    ddlRideWatch = want;
+    if (want)
+    {
+        ddlRideButtonDown = theInput.IsActionPressed('VehicleItemAction');
+        AddTimer('DDL_RideButtonTick', 0.03, true);
+    }
+    else
+        RemoveTimer('DDL_RideButtonTick');
+}
+
+@addMethod(W3PlayerWitcher)
+timer function DDL_RideButtonTick(delta : float, id : int)
+{
+    var down : bool;
+    down = theInput.IsActionPressed('VehicleItemAction');
+    if (down && !ddlRideButtonDown && GetBIsInputAllowed())
+        DDL_Toggle();
+    ddlRideButtonDown = down;
 }
 
 @addMethod(W3PlayerWitcher)
@@ -690,6 +776,7 @@ function OnSpawned(spawnData : SEntitySpawnData)
     wrappedMethod(spawnData);
     ddlEntity = NULL;
     ddlSwingRunning = false;
+    ddlRideWatch = false;
     ddlSpawnRetryAt = 0.0;
     ddlAutoReady = false;
     ddlLastGameSeconds = GameTimeToSeconds(theGame.GetGameTime());
@@ -700,6 +787,7 @@ function OnSpawned(spawnData : SEntitySpawnData)
 function OnDestroyed()
 {
     RemoveTimer('DDL_Tick');
+    RemoveTimer('DDL_RideButtonTick');
     DDL_Despawn();
     wrappedMethod();
 }
@@ -818,9 +906,18 @@ exec function ddlpos(forward : float, up : float, outward : float)
     player = (W3PlayerWitcher)thePlayer;
     if (!player)
         return;
-    player.ddlTuneForward += forward;
-    player.ddlTuneUp += up;
-    player.ddlTuneOut += outward;
+    if (player.ddlRiding)
+    {
+        player.ddlRideForward += forward;
+        player.ddlRideUp += up;
+        player.ddlRideOut += outward;
+    }
+    else
+    {
+        player.ddlTuneForward += forward;
+        player.ddlTuneUp += up;
+        player.ddlTuneOut += outward;
+    }
     player.DDL_ApplyPlacement();
     DDL_ShowTune();
 }
@@ -831,9 +928,18 @@ exec function ddlrot(pitch : float, yaw : float, roll : float)
     player = (W3PlayerWitcher)thePlayer;
     if (!player)
         return;
-    player.ddlTunePitch += pitch;
-    player.ddlTuneYaw += yaw;
-    player.ddlTuneRoll += roll;
+    if (player.ddlRiding)
+    {
+        player.ddlRidePitch += pitch;
+        player.ddlRideYaw += yaw;
+        player.ddlRideRoll += roll;
+    }
+    else
+    {
+        player.ddlTunePitch += pitch;
+        player.ddlTuneYaw += yaw;
+        player.ddlTuneRoll += roll;
+    }
     player.DDL_ApplyPlacement();
     DDL_ShowTune();
 }
@@ -846,9 +952,18 @@ exec function ddlbody(pitch : float, yaw : float, roll : float)
     player = (W3PlayerWitcher)thePlayer;
     if (!player)
         return;
-    player.ddlTwistPitch += pitch;
-    player.ddlTwistYaw += yaw;
-    player.ddlTwistRoll += roll;
+    if (player.ddlRiding)
+    {
+        player.ddlRideTwistPitch += pitch;
+        player.ddlRideTwistYaw += yaw;
+        player.ddlRideTwistRoll += roll;
+    }
+    else
+    {
+        player.ddlTwistPitch += pitch;
+        player.ddlTwistYaw += yaw;
+        player.ddlTwistRoll += roll;
+    }
     player.DDL_ApplyPlacement();
     DDL_ShowTune();
 }
@@ -881,15 +996,30 @@ exec function ddlreset()
     player = (W3PlayerWitcher)thePlayer;
     if (!player)
         return;
-    player.ddlTuneForward = 0.0;
-    player.ddlTuneUp = 0.0;
-    player.ddlTuneOut = 0.0;
-    player.ddlTunePitch = 0.0;
-    player.ddlTuneYaw = 0.0;
-    player.ddlTuneRoll = 0.0;
-    player.ddlTwistPitch = 0.0;
-    player.ddlTwistYaw = 0.0;
-    player.ddlTwistRoll = 0.0;
+    if (player.ddlRiding)
+    {
+        player.ddlRideForward = 0.0;
+        player.ddlRideUp = 0.0;
+        player.ddlRideOut = 0.0;
+        player.ddlRidePitch = 0.0;
+        player.ddlRideYaw = 0.0;
+        player.ddlRideRoll = 0.0;
+        player.ddlRideTwistPitch = 0.0;
+        player.ddlRideTwistYaw = 0.0;
+        player.ddlRideTwistRoll = 0.0;
+    }
+    else
+    {
+        player.ddlTuneForward = 0.0;
+        player.ddlTuneUp = 0.0;
+        player.ddlTuneOut = 0.0;
+        player.ddlTunePitch = 0.0;
+        player.ddlTuneYaw = 0.0;
+        player.ddlTuneRoll = 0.0;
+        player.ddlTwistPitch = 0.0;
+        player.ddlTwistYaw = 0.0;
+        player.ddlTwistRoll = 0.0;
+    }
     player.DDL_ApplyPlacement();
     DDL_ShowTune();
 }
@@ -906,12 +1036,20 @@ function DDL_ShowTune()
     player = (W3PlayerWitcher)thePlayer;
     if (!player)
         return;
-    text = "Lantern tune: pos " + FloatToStringPrec(player.ddlTuneForward, 1) + " / "
-        + FloatToStringPrec(player.ddlTuneUp, 1) + " / " + FloatToStringPrec(player.ddlTuneOut, 1)
-        + " cm, rot " + FloatToStringPrec(player.ddlTunePitch, 0) + " / "
-        + FloatToStringPrec(player.ddlTuneYaw, 0) + " / " + FloatToStringPrec(player.ddlTuneRoll, 0)
-        + ", body " + FloatToStringPrec(player.ddlTwistPitch, 0) + " / "
-        + FloatToStringPrec(player.ddlTwistYaw, 0) + " / " + FloatToStringPrec(player.ddlTwistRoll, 0);
+    if (player.ddlRiding)
+        text = "Riding: pos " + FloatToStringPrec(player.ddlRideForward, 1) + " / "
+            + FloatToStringPrec(player.ddlRideUp, 1) + " / " + FloatToStringPrec(player.ddlRideOut, 1)
+            + " cm, rot " + FloatToStringPrec(player.ddlRidePitch, 0) + " / "
+            + FloatToStringPrec(player.ddlRideYaw, 0) + " / " + FloatToStringPrec(player.ddlRideRoll, 0)
+            + ", body " + FloatToStringPrec(player.ddlRideTwistPitch, 0) + " / "
+            + FloatToStringPrec(player.ddlRideTwistYaw, 0) + " / " + FloatToStringPrec(player.ddlRideTwistRoll, 0);
+    else
+        text = "Lantern tune: pos " + FloatToStringPrec(player.ddlTuneForward, 1) + " / "
+            + FloatToStringPrec(player.ddlTuneUp, 1) + " / " + FloatToStringPrec(player.ddlTuneOut, 1)
+            + " cm, rot " + FloatToStringPrec(player.ddlTunePitch, 0) + " / "
+            + FloatToStringPrec(player.ddlTuneYaw, 0) + " / " + FloatToStringPrec(player.ddlTuneRoll, 0)
+            + ", body " + FloatToStringPrec(player.ddlTwistPitch, 0) + " / "
+            + FloatToStringPrec(player.ddlTwistYaw, 0) + " / " + FloatToStringPrec(player.ddlTwistRoll, 0);
     theGame.GetGuiManager().ShowNotification(text);
     LogChannel('DDLantern', text);
 }
