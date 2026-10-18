@@ -17,7 +17,7 @@ A belt lantern for The Witcher 3 Remastered, inspired by the Arisen's lantern in
 [*]Light or douse it by hand from the quick slot (middle mouse / R1 / RB). It never goes into his hand.
 [*]Burns Lantern Oil and refills itself from flasks you carry.
 [*]Swimming or diving puts the flame out.
-[*]Swings as Geralt moves. Hidden in cutscenes and dialogue.
+[*]Swings as Geralt moves. Hidden in cutscenes and dialogue (or only in cutscenes, or never).
 [*]Sold by innkeepers and shopkeepers.
 [*]Settings under Options > Mods > Dragon's Lantern: position, brightness, light radius, oil use and more.
 [*]Text in all 17 languages the game supports.
@@ -58,7 +58,7 @@ A belt lantern for The Witcher 3 Remastered, inspired by the Arisen's lantern in
 [*]Light or douse it by hand from the quick slot (middle mouse / R1 / RB). It never goes into his hand.
 [*]Burns Lantern Oil and refills itself from flasks you carry.
 [*]Swimming or diving puts the flame out.
-[*]Swings as Geralt moves. Hidden in cutscenes and dialogue.
+[*]Swings as Geralt moves. Hidden in cutscenes and dialogue (or only in cutscenes, or never).
 [*]Sold by innkeepers and shopkeepers.
 [*]Settings under Options > Mods > Dragon's Lantern: position, brightness, light radius, oil use and more.
 [*]Text in all 17 languages the game supports.
@@ -99,7 +99,7 @@ A belt lantern for The Witcher 3 Remastered, inspired by the Arisen's lantern in
 - Light or douse it by hand from the quick slot. It never goes into his hand.
 - Burns Lantern Oil and refills itself from flasks you carry.
 - Swimming or diving puts the flame out.
-- Swings as Geralt moves. Hidden in cutscenes and dialogue.
+- Swings as Geralt moves. Hidden in cutscenes and dialogue (or only in cutscenes, or never).
 - Sold by innkeepers and shopkeepers.
 - Settings under Options > Mods > Dragon's Lantern.
 - Text in all 17 languages the game supports.

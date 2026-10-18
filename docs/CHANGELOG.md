@@ -1,3 +1,13 @@
+Version 1.2
+
+- New: "Hide lantern" option, replacing "Hide in cutscenes". Hide it in dialogue and cutscenes (as before), in cutscenes only, or never. "In cutscenes only" keeps the lantern lit while Geralt examines bodies in quest scenes.
+- Improved: Shadows (experimental). With shadows on, the light now sits a little out from Geralt's body, so he casts a natural silhouette instead of huge shadows across the room. The lantern's own glass and frame no longer cast shadows, and the shadows no longer lag behind as the lantern moves.
+- New: Light forward / Light up / Light out sliders (experimental) to fine-tune where the light sits when Shadows is on. Default: 30 / 30 / 30 cm.
+- Fixed: settings you had never changed showed as Off or 0 in the menu (the mod still used its defaults). They now show the real defaults.
+- Fixed: the preset row at the top of the menu showed "##preset" text.
+
+Updating: replace the settings menu file (bin\config\r4game\user_config_matrix\pc\modDragonsLantern.xml) with the new one, or the new options won't appear.
+
 Version 1.1
 
 - New: riding position. While Geralt is on horseback the lantern moves to the back of his belt, clear of the saddle and his leg, and returns to his hip when he dismounts.

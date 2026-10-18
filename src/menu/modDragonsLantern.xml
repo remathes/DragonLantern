@@ -12,11 +12,14 @@
                 <Entry varId="autoRefill" value="true" overrideGroup="DDLantern" />
                 <Entry varId="burnHours" value="8" overrideGroup="DDLantern" />
                 <Entry varId="douseInWater" value="true" overrideGroup="DDLantern" />
-                <Entry varId="hideInScenes" value="true" overrideGroup="DDLantern" />
+                <Entry varId="hideIn" value="0" overrideGroup="DDLantern" />
                 <Entry varId="merchants" value="true" overrideGroup="DDLantern" />
                 <Entry varId="brightness" value="80" overrideGroup="DDLantern" />
                 <Entry varId="radius" value="12" overrideGroup="DDLantern" />
                 <Entry varId="castShadows" value="false" overrideGroup="DDLantern" />
+                <Entry varId="lightForward" value="30" overrideGroup="DDLantern" />
+                <Entry varId="lightUp" value="30" overrideGroup="DDLantern" />
+                <Entry varId="lightOut" value="30" overrideGroup="DDLantern" />
                 <Entry varId="swing" value="true" overrideGroup="DDLantern" />
                 <Entry varId="swingStrength" value="100" overrideGroup="DDLantern" />
                 <Entry varId="modelUp" value="0" overrideGroup="DDLantern" />
@@ -61,11 +64,26 @@
             <Var id="autoRefill" displayName="ddl_auto_refill" displayType="TOGGLE" value="true" overrideGroup="DDLantern" />
             <Var id="burnHours" displayName="ddl_burn_hours" displayType="SLIDER;1;48;47" value="8" overrideGroup="DDLantern" />
             <Var id="douseInWater" displayName="ddl_douse" displayType="TOGGLE" value="true" overrideGroup="DDLantern" />
-            <Var id="hideInScenes" displayName="ddl_hide_scenes" displayType="TOGGLE" value="true" overrideGroup="DDLantern" />
+            <Var id="hideIn" displayName="ddl_hide_in" displayType="OPTIONS" value="0" overrideGroup="DDLantern">
+                <OptionsArray>
+                    <Option id="0" displayName="ddl_hide_all">
+                        <Entry varId="hideIn" value="0" overrideGroup="DDLantern" />
+                    </Option>
+                    <Option id="1" displayName="ddl_hide_cutscenes">
+                        <Entry varId="hideIn" value="1" overrideGroup="DDLantern" />
+                    </Option>
+                    <Option id="2" displayName="ddl_hide_never">
+                        <Entry varId="hideIn" value="2" overrideGroup="DDLantern" />
+                    </Option>
+                </OptionsArray>
+            </Var>
             <Var id="merchants" displayName="ddl_merchants" displayType="TOGGLE" value="true" overrideGroup="DDLantern" />
             <Var id="brightness" displayName="ddl_brightness" displayType="SLIDER;1;200;199" value="80" overrideGroup="DDLantern" />
             <Var id="radius" displayName="ddl_radius" displayType="SLIDER;2;30;28" value="12" overrideGroup="DDLantern" />
             <Var id="castShadows" displayName="ddl_shadows" displayType="TOGGLE" value="false" overrideGroup="DDLantern" />
+            <Var id="lightForward" displayName="ddl_light_forward" displayType="SLIDER;-30;60;90" value="30" overrideGroup="DDLantern" />
+            <Var id="lightUp" displayName="ddl_light_up" displayType="SLIDER;-20;80;100" value="30" overrideGroup="DDLantern" />
+            <Var id="lightOut" displayName="ddl_light_out" displayType="SLIDER;-10;40;50" value="30" overrideGroup="DDLantern" />
             <Var id="swing" displayName="ddl_swing" displayType="TOGGLE" value="true" overrideGroup="DDLantern" />
             <Var id="swingStrength" displayName="ddl_swing_strength" displayType="SLIDER;0;200;40" value="100" overrideGroup="DDLantern" />
             <Var id="modelUp" displayName="ddl_model_up" displayType="OPTIONS" value="0" overrideGroup="DDLantern">

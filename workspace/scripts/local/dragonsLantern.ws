@@ -7,7 +7,7 @@
 //     automatically when it runs dry, or you can top up by using the lantern
 //     while it is unlit with an empty reservoir.
 //   * Swimming or diving puts the flame out; you relight it yourself.
-//   * Hidden in cutscenes and dialogue, swings as Geralt moves.
+//   * Hidden in cutscenes and dialogue (configurable), swings as Geralt moves.
 //
 // Entity contract (built in REDkit, see docs/REDKIT_ASSET_GUIDE.md):
 //   mods\dragons_lantern\ddl_lantern.w2ent, a copy of the vanilla
@@ -65,6 +65,8 @@ function DDL_RideTwist() : EulerAngles { return EulerAngles(0.0, 90.0, 6.0); }
 @addField(W3PlayerWitcher) var ddlSpawnRetryAt : float;
 @addField(W3PlayerWitcher) var ddlBasePosition : Vector;
 @addField(W3PlayerWitcher) var ddlBaseRotation : EulerAngles;
+@addField(W3PlayerWitcher) var ddlLightHome : Vector;          // light's authored spot in the carrier
+@addField(W3PlayerWitcher) var ddlLightOffset : Vector;        // menu light offset, pelvis space (m)
 
 // Live tuning from the console (ddlpos / ddlrot). Centimetres and degrees,
 // relative to the chosen position preset; saved so they survive reloads.
@@ -143,6 +145,39 @@ function DDL_Option(id : name, fallback : int) : int
     if (raw == "")
         return fallback;
     return StringToInt(raw, fallback);
+}
+
+// Settings nobody has saved yet read back empty, and the menu shows them as
+// Off / 0 even though the script uses its defaults. Fill the empty ones from
+// the menu's Default preset, keeping every value the player already set.
+function DDL_EnsureDefaults()
+{
+    var config : CInGameConfigWrapper;
+    var names : array<name>;
+    var values : array<string>;
+    var count, i : int;
+    var missing : bool;
+
+    config = theGame.GetInGameConfigWrapper();
+    if (!config || config.GetGroupPresetsNum(DDL_Group()) <= 0)
+        return;
+    count = config.GetVarsNumByGroupName(DDL_Group());
+    for (i = 0; i < count; i += 1)
+    {
+        names.PushBack(config.GetVarNameByGroupName(DDL_Group(), i));
+        values.PushBack(config.GetVarValue(DDL_Group(), names[i]));
+        if (values[i] == "")
+            missing = true;
+    }
+    if (!missing)
+        return;
+    config.ApplyGroupPreset(DDL_Group(), 0);
+    for (i = 0; i < count; i += 1)
+    {
+        if (values[i] != "")
+            config.SetVarValue(DDL_Group(), names[i], values[i]);
+    }
+    theGame.SaveUserSettings();
 }
 
 function DDL_BoolText(value : bool) : string
@@ -313,6 +348,7 @@ function DDL_Spawn() : bool
     hinge = ddlEntity.GetComponent(DDL_HingeName());
     if (hinge)
         hinge.SetEnabled(false);
+    ddlLightHome = ddlPoint.GetLocalPosition();
 
     ddlShown = true;
     ddlFlameOn = true;
@@ -413,6 +449,17 @@ function DDL_ApplyPlacement()
     }
     ddlCarrier.SetPosition(ddlBasePosition);
     ddlCarrier.SetRotation(ddlBaseRotation);
+
+    // Experimental: with Shadows on, move only the light away from Geralt's
+    // body so his own shadow stays small (30/30/30 tuned in game). Without
+    // shadows the light stays in the lantern. Same axes as the lantern offsets.
+    if (DDL_Bool('castShadows', false))
+        ddlLightOffset = Vector(DDL_Num('lightForward', 30.0, -30.0, 60.0) * -0.01,
+            DDL_Num('lightUp', 30.0, -20.0, 80.0) * -0.01,
+            DDL_Num('lightOut', 30.0, -10.0, 40.0) * -0.01 * DDL_SideSign());
+    else
+        ddlLightOffset = Vector(0.0, 0.0, 0.0);
+    DDL_PlaceLight(ddlBaseRotation);
     // Twist the body about its own axis, relative to the carrier, so the door
     // and candle face forward. Done on the child to avoid the carrier's gimbal lock.
     if (ddlBody)
@@ -429,6 +476,22 @@ function DDL_ApplyPlacement()
     }
 }
 
+// The light is a child of the carrier, which leans and swings. Its offset is
+// wanted in pelvis space, so turn it back through the carrier's current
+// rotation before adding it to the light's authored position.
+@addMethod(W3PlayerWitcher)
+function DDL_PlaceLight(carrierRotation : EulerAngles)
+{
+    var lightPos : Vector;
+
+    if (!ddlPoint)
+        return;
+    lightPos = ddlLightHome;
+    if (ddlLightOffset.X != 0.0 || ddlLightOffset.Y != 0.0 || ddlLightOffset.Z != 0.0)
+        lightPos = lightPos + VecTransformDir(MatrixGetInverted(MatrixBuiltRotation(carrierRotation)), ddlLightOffset);
+    ddlPoint.SetPosition(lightPos);
+}
+
 // +1 when the lantern hangs on Geralt's left (-Z), -1 on his right.
 @addMethod(W3PlayerWitcher)
 function DDL_SideSign() : float
@@ -441,6 +504,8 @@ function DDL_SideSign() : float
 @addMethod(W3PlayerWitcher)
 function DDL_ApplyLightSettings()
 {
+    var pointLight : CPointLightComponent;
+
     if (!ddlPoint)
         return;
     ddlPoint.brightness = DDL_Num('brightness', 80.0, 1.0, 200.0);
@@ -450,6 +515,11 @@ function DDL_ApplyLightSettings()
         ddlPoint.shadowCastingMode = LSCM_Normal;
     else
         ddlPoint.shadowCastingMode = LSCM_None;
+    // The light moves with Geralt every frame; a static shadow cache would
+    // keep showing shadows from where it used to be.
+    pointLight = (CPointLightComponent)ddlPoint;
+    if (pointLight)
+        pointLight.cacheStaticShadows = false;
     // A lit light only picks up new properties when it is re-enabled.
     if (ddlFlameOn)
     {
@@ -466,7 +536,8 @@ function DDL_ApplySettingsIfChanged()
     var seen : string;
     seen = DDL_Raw('position') + "|" + DDL_Raw('modelUp') + "|" + DDL_Raw('offsetForward') + "|"
         + DDL_Raw('offsetUp') + "|" + DDL_Raw('offsetOut') + "|" + DDL_Raw('brightness') + "|"
-        + DDL_Raw('radius') + "|" + DDL_Raw('castShadows');
+        + DDL_Raw('radius') + "|" + DDL_Raw('castShadows') + "|" + DDL_Raw('lightForward') + "|"
+        + DDL_Raw('lightUp') + "|" + DDL_Raw('lightOut');
     if (seen == ddlSettingsSeen)
         return;
     ddlSettingsSeen = seen;
@@ -481,9 +552,39 @@ function DDL_SetShown(shown : bool)
         return;
     ddlShown = shown;
     ddlBody.SetVisible(shown);
-    ddlBody.SetCastingShadows(false);
+    DDL_DisableEntityShadows();
     if (!shown)
         DDL_SetFlame(false);
+}
+
+// The light sits inside the lantern, so any part of the lantern that casts
+// shadows (glass, frame, flame mesh) would black out the world around it.
+// The entity also keeps the vanilla lantern's spot light, which must not add
+// shadows of its own; only our point light follows the Shadows option.
+@addMethod(W3PlayerWitcher)
+function DDL_DisableEntityShadows()
+{
+    var comps : array<CComponent>;
+    var drawable : CDrawableComponent;
+    var light : CLightComponent;
+    var i : int;
+
+    if (!ddlEntity)
+        return;
+    comps = ddlEntity.GetComponentsByClassName('CDrawableComponent');
+    for (i = 0; i < comps.Size(); i += 1)
+    {
+        drawable = (CDrawableComponent)comps[i];
+        if (drawable)
+            drawable.SetCastingShadows(false);
+    }
+    comps = ddlEntity.GetComponentsByClassName('CLightComponent');
+    for (i = 0; i < comps.Size(); i += 1)
+    {
+        light = (CLightComponent)comps[i];
+        if (light && light != ddlPoint)
+            light.shadowCastingMode = LSCM_None;
+    }
 }
 
 @addMethod(W3PlayerWitcher)
@@ -511,6 +612,20 @@ function DDL_InScene() : bool
 {
     return theGame.IsDialogOrCutscenePlaying() || theGame.isCutscenePlaying
         || theGame.IsCurrentlyPlayingNonGameplayScene() || IsInGameplayScene();
+}
+
+// "Hide lantern" option: 0 = in dialogue and cutscenes, 1 = in cutscenes only,
+// 2 = never. Quest examinations (e.g. kneeling over a corpse) run as dialogue
+// scenes, so option 1 keeps the lantern lit through them.
+@addMethod(W3PlayerWitcher)
+function DDL_ShouldHide() : bool
+{
+    switch (DDL_Option('hideIn', 0))
+    {
+        case 1:  return theGame.isCutscenePlaying;
+        case 2:  return false;
+        default: return DDL_InScene();
+    }
 }
 
 @addMethod(W3PlayerWitcher)
@@ -589,7 +704,7 @@ function DDL_Sync()
 
     DDL_ApplySettingsIfChanged();
     DDL_BurnOil();
-    DDL_SetShown(!DDL_InScene() || !DDL_Bool('hideInScenes', true));
+    DDL_SetShown(!DDL_ShouldHide());
     DDL_SetFlame(ddlShown && ddlLit && !inWater && DDL_HasFuel());
 
     if (ddlShown && DDL_Bool('swing', true) && !IsUsingHorse())
@@ -701,6 +816,7 @@ function DDL_StopSwing()
     ddlSwingSideRate = 0.0;
     if (ddlCarrier)
         ddlCarrier.SetRotation(ddlBaseRotation);
+    DDL_PlaceLight(ddlBaseRotation);
 }
 
 @addMethod(W3PlayerWitcher)
@@ -764,6 +880,7 @@ timer function DDL_SwingTick(delta : float, id : int)
     rotation.Roll += ddlSwingFwd;
     rotation.Yaw += ddlSwingSide * DDL_SideSign();
     ddlCarrier.SetRotation(rotation);
+    DDL_PlaceLight(rotation);
 }
 
 // ---------------------------------------------------------------------------
@@ -780,6 +897,7 @@ function OnSpawned(spawnData : SEntitySpawnData)
     ddlSpawnRetryAt = 0.0;
     ddlAutoReady = false;
     ddlLastGameSeconds = GameTimeToSeconds(theGame.GetGameTime());
+    DDL_EnsureDefaults();
     AddTimer('DDL_Tick', 0.25, true);
 }
 

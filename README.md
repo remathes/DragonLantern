@@ -9,7 +9,7 @@ A Dragon's Dogma style belt lantern for **The Witcher 3: Wild Hunt — Remastere
 - Use it from the quick slot to light or douse it by hand. It never goes into his hand.
 - Burns **Lantern Oil**. One flask lasts 8 game hours by default, and carried flasks refill it automatically.
 - Swimming or diving **puts it out**. You relight it yourself.
-- Hidden in cutscenes and dialogue. Swings as he walks, runs and rolls.
+- Hidden in cutscenes and dialogue (or only in cutscenes, or never). Swings as he walks, runs and rolls.
 - Innkeepers and shopkeepers sell the lantern and oil.
 - Everything can be adjusted under Options > Mods > Dragon's Lantern.
 - Text in all 17 languages the game supports.
