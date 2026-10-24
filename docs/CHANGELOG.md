@@ -1,3 +1,10 @@
+Version 1.3
+
+- Fixed: removing the mod could wipe merchants' stock (for example the Crow's Perch quartermaster) and gear you'd bought. The game cuts off a saved inventory at the first item it doesn't recognise, and earlier versions left the lantern and oil in shops' stock permanently. Shops now only show them while you're trading; unsold ones are removed when you close the shop, and old lantern stock from 1.0-1.2 is cleared too.
+- New: ddluninstall console command. Run it before removing the mod: it takes every Belt Lantern and Lantern Oil out of Geralt's inventory and from nearby merchants. Then save, and remove the mod.
+
+Already removed the mod and lost gear? Reinstall it and load a save from before you removed it: the gear is still in that save.
+
 Version 1.2
 
 - New: "Hide lantern" option, replacing "Hide in cutscenes". Hide it in dialogue and cutscenes (as before), in cutscenes only, or never. "In cutscenes only" keeps the lantern lit while Geralt examines bodies in quest scenes.

@@ -23,6 +23,17 @@ A Dragon's Dogma style belt lantern for **The Witcher 3: Wild Hunt — Remastere
 Requires The Witcher 3 Remastered (game version 5.0 or later). Then buy the
 Belt Lantern from an innkeeper or shopkeeper and put it in a Pockets slot.
 
+## Uninstalling
+
+Remove the mod's items from your save first, or the game may lose track of other gear when it loads the save without the mod:
+
+1. With the mod still installed, open the debug console and run `ddluninstall` (or sell or drop every Belt Lantern and Lantern Oil yourself).
+2. Save the game.
+3. Remove `Mods\moddragonslantern` and `bin\config\r4game\user_config_matrix\pc\modDragonsLantern.xml`.
+4. Load the save you made in step 2.
+
+If you already removed the mod and gear is missing, reinstall it and load a save made while it was installed. The gear is still in that save.
+
 ## Reporting bugs
 
 Please report bugs here on GitHub, wherever you got the mod:

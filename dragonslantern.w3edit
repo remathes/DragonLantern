@@ -1,7 +1,7 @@
 {
     "name": "dragonslantern",
     "modName": "DragonLantern",
-    "version": "1.2",
+    "version": "1.3",
     "gameVersion": "29",
     "description": "Attaches a lantern to the belt, uses oil as its fuel.",
     "thumbnail": "D:\\Studio\\DragonsLantern\\docs\\thumbnail.jpg",

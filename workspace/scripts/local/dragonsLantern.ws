@@ -941,47 +941,65 @@ function OnUseSelectedItem(optional force : bool)
     return wrappedMethod(force);
 }
 
-// Shops. The game's inventory menu treats an NPC tagged 'Merchant' as a shop
-// (CR4InventoryMenu.OnConfigUI), refreshes its loot and then builds the shop
-// grid. A restock during that refresh can clear items outside the merchant's
-// loot table, so we stock before and check again after, redrawing the shop
-// grid with the game's own UpdateShop() if anything had to be re-added.
+// Shops. The game cuts off a saved inventory at the first item it doesn't
+// recognise, so if the mod's items were left in a merchant's stock and the mod
+// was later removed, that merchant (and anything stored after our items) was
+// lost from the save. The lantern and oil are therefore only temporary stock:
+// added when the shop opens, after the game has generated its own goods, and
+// removed again (unsold ones) when the shop closes. Closing a shop also clears
+// any lantern stock left behind by versions 1.0-1.2.
+@addField(CR4InventoryMenu) var ddlShopNpc : CNewNPC;
+
 @wrapMethod(CR4InventoryMenu)
 function OnConfigUI()
 {
     var data : IScriptable;
     data = GetMenuInitData();
-    DDL_StockShop(data);
     wrappedMethod();
-    if (DDL_StockShop(data))
+    ddlShopNpc = DDL_ShopMerchant(data);
+    if (ddlShopNpc && DDL_Bool('merchants', true) && DDL_StockShop(ddlShopNpc))
         UpdateShop();
 }
 
-// Adds the lantern and oil to an innkeeper's or shopkeeper's stock when
-// missing. Returns true if anything was added.
-function DDL_StockShop(data : IScriptable) : bool
+@wrapMethod(CR4InventoryMenu)
+function OnClosingMenu()
+{
+    if (ddlShopNpc)
+        DDL_RemoveShopStock(ddlShopNpc);
+    ddlShopNpc = NULL;
+    wrappedMethod();
+}
+
+// The NPC behind a shop menu, if it's an innkeeper or shopkeeper.
+function DDL_ShopMerchant(data : IScriptable) : CNewNPC
 {
     var npc : CNewNPC;
     var initData : W3InventoryInitData;
     var merchant : W3MerchantComponent;
-    var inv : CInventoryComponent;
     var pin : name;
-    var added : bool;
 
-    if (!DDL_Bool('merchants', true))
-        return false;
     npc = (CNewNPC)data;
     initData = (W3InventoryInitData)data;
     if (initData)
         npc = (CNewNPC)initData.containerNPC;
     if (!npc || !npc.HasTag('Merchant'))
-        return false;
+        return NULL;
     merchant = (W3MerchantComponent)npc.GetComponentByClassName('W3MerchantComponent');
     if (!merchant)
-        return false;
+        return NULL;
     pin = merchant.GetMapPinType();
     if (pin != 'Innkeeper' && pin != 'Shopkeeper')
-        return false;
+        return NULL;
+    return npc;
+}
+
+// Adds the lantern and oil to the merchant's stock when missing.
+// Returns true if anything was added.
+function DDL_StockShop(npc : CNewNPC) : bool
+{
+    var inv : CInventoryComponent;
+    var added : bool;
+
     inv = npc.GetInventory();
     if (!inv)
         return false;
@@ -998,9 +1016,58 @@ function DDL_StockShop(data : IScriptable) : bool
     return added;
 }
 
+// Takes every lantern and oil out of an NPC's inventory.
+function DDL_RemoveShopStock(npc : CNewNPC) : int
+{
+    var inv : CInventoryComponent;
+    var lanterns, oil : int;
+
+    inv = npc.GetInventory();
+    if (!inv)
+        return 0;
+    lanterns = inv.GetItemQuantityByName(DDL_LanternItem(), false);
+    oil = inv.GetItemQuantityByName(DDL_OilItem(), false);
+    if (lanterns > 0)
+        inv.RemoveItemByName(DDL_LanternItem(), lanterns);
+    if (oil > 0)
+        inv.RemoveItemByName(DDL_OilItem(), oil);
+    return lanterns + oil;
+}
+
 // ---------------------------------------------------------------------------
 // Console commands (enable the debug console to use them)
 // ---------------------------------------------------------------------------
+
+// Before uninstalling the mod: removes every Belt Lantern and Lantern Oil from
+// Geralt's inventory and puts the lantern out, so the save no longer holds
+// items the game won't recognise once the mod is gone. Save afterwards.
+exec function ddluninstall()
+{
+    var player : W3PlayerWitcher;
+    var inv : CInventoryComponent;
+    var lanterns, oil, swept, i : int;
+    var merchants : array<CNewNPC>;
+    player = (W3PlayerWitcher)thePlayer;
+    if (!player)
+        return;
+    inv = player.GetInventory();
+    player.ddlLit = false;
+    player.DDL_Despawn();
+    lanterns = inv.GetItemQuantityByName(DDL_LanternItem(), false);
+    oil = inv.GetItemQuantityByName(DDL_OilItem(), false);
+    if (lanterns > 0)
+        inv.RemoveItemByName(DDL_LanternItem(), lanterns);
+    if (oil > 0)
+        inv.RemoveItemByName(DDL_OilItem(), oil);
+    // Merchants stocked by 1.0-1.2 may still hold the items; clean the ones
+    // currently loaded (the ones nearby).
+    theGame.GetNPCsByTag('Merchant', merchants);
+    for (i = 0; i < merchants.Size(); i += 1)
+        swept += DDL_RemoveShopStock(merchants[i]);
+    theGame.GetGuiManager().ShowNotification("Dragon's Lantern: removed " + IntToString(lanterns) + " lantern(s) and "
+        + IntToString(oil) + " oil from Geralt, " + IntToString(swept) + " from nearby merchants. "
+        + "Save now, then you can remove the mod.");
+}
 
 exec function ddlgive()
 {
